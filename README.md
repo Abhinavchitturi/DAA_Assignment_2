@@ -18,18 +18,13 @@ Open a terminal in the extracted folder and run the following command to compile
 
 For The Research Paper:  The worst-case time complexity for generating all maximal cliques and computational experiments.
 ```bash
- g++ -O3 -o maximal_clique tomiata.cpp
+ g++ -O3 -o algo1 algo1.cpp
 ```
 
 For The Research Paper :  Listing All Maximal Cliques in Sparse Graphs in Near-Optimal TIme
 ```bash
- g++ -O3 -o maximal_clique Bkl.cpp
+ g++ -O3 -o algo4 algo4.cpp
 ```
-For The Research Paper :Arboricity and Subgraph Listing Algorithms
-```bash
- g++ -O3 -o maximal_clique Arboricity.cpp
-```
-
 
 
 
@@ -38,21 +33,25 @@ For The Research Paper :Arboricity and Subgraph Listing Algorithms
 Once compiled, execute the program using:
 
 ```bash
-./maximal_clique
+./algo1
+```
+
+```bash
+./algo4
 ```
 on running the program the code will ask to specify which dataset 
 
-For Wiki-Vote.txt
+For NetScience.txt
 ``` bash
-Wiki-Vote.txt
+NetScience.txt
 ```
-For Enron-Email.txt
+For AS-733.txt
 ```bash
-Enron-Email.txt
+AS-733.txt
 ```
-For Skitter.txt
+For CA-HepTh.txt
 ``` bash
-Skitter.txt
+CA-HepTh.txt
 ```
 
 
