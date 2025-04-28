@@ -2,6 +2,8 @@
 # Maximal Clique Algorithm - Instructions
 ## Website Link
 https://abhinavchitturi.github.io/DAA_ASSIGNMENT_2_WEB/
+## Codes and Dataset Link
+https://drive.google.com/drive/u/2/folders/1wLB1oPBcSf1gBKX72_7PiPTdfi-7CXR3
 ## Prerequisites
 Ensure you have the following installed:
 
