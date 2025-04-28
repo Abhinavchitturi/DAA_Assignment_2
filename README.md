@@ -16,16 +16,15 @@ Unzip the provided zip file and open the extracted folder in **VS Code** or your
 ### 2. Compile the Program
 Open a terminal in the extracted folder and run the following command to compile the C++ files with optimization:
 
-For The Research Paper:  The worst-case time complexity for generating all maximal cliques and computational experiments.
+For The Research Paper:  EXACT Method Algorithm.
 ```bash
  g++ -O3 -o algo1 algo1.cpp
 ```
 
-For The Research Paper :  Listing All Maximal Cliques in Sparse Graphs in Near-Optimal TIme
+For The Research Paper:  CoreEXACT Method Algorithm.
 ```bash
  g++ -O3 -o algo4 algo4.cpp
 ```
-
 
 
 
@@ -54,6 +53,11 @@ For CA-HepTh.txt
 CA-HepTh.txt
 ```
 
+For Yeast.txt
+``` bash
+Yeast.txt
+```
+
 
 ## Modifications on the Input File  
 
@@ -61,8 +65,7 @@ CA-HepTh.txt
    - The dataset initially contained comments, which were removed to ensure clean parsing.  
 
 2. **Standardized Format**  
-   - The first line of the file represents the number of vertices (`n`).  
-   - The second line represents the number of edges (`m`).  
+   - The first line of the file represents the number of vertices (`n`), number of edges (`m`), size of clique (`h`).
    - Each subsequent line contains two integers representing an edge between two vertices.  
 
 3. **Ensured Proper Parsing**  
@@ -73,6 +76,8 @@ CA-HepTh.txt
 
 These modifications make the input processing more structured and flexible.
 
+## Modifications on the Script
+Have to mention the input file in the int main function.
 
 ## Contributions  
 
