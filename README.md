@@ -83,10 +83,10 @@ Have to mention the input file in the int main function.
 
 | Name                        | ID               | Contributions                                                                 |
 |-----------------------------|-----------------|-------------------------------------------------------------------------------|
-| Karingattil Sagar Thomas    | 2022A7PS0156H   | Read the Tomita.cliques paper, implemented the algorithm, helped in writing the report and readme file, and contributed to the arboricity code.     |
-| Abhinav Chitturi            | 2022A7PS0064H   | Contributed to the arboricity code and made the website and helped in writing report                                                                |
-| Dheeraj M P                 | 2022A7PS0006H   | Contributed to the arboricity code and made the website and helped in writing report                                                                |
-| Pradyum Agarwal             | 2022A7PS0369H   | Read and Implemeneted Bron–Kerbosch algorithm with degenerancy . Contributed to the arboricity code and helped in writing the report                |
+| Karingattil Sagar Thomas    | 2022A7PS0156H   | Helped in implementing algo 1 and algo 4                                                                                                       |
+| Abhinav Chitturi            | 2022A7PS0064H   | Contributed to the algo1 code and made the website and helped in writing report                                                                |
+| Dheeraj M P                 | 2022A7PS0006H   | Contributed to the algo4 code and made the website and helped in writing report                                                                |
+| Pradyum Agarwal             | 2022A7PS0369H   | Helped in implementing algo 1 and algo 4                                                                                                       |
 
                                                                   
 
