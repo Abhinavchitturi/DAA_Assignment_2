@@ -11,14 +11,13 @@
 using namespace std ; 
 class Graph {
 private:
-    int n; // Number of vertices
-    std::vector<std::vector<int>> adj; // Adjacency list
+    int n; 
+    vector<vector<int>> adj;
     
-    // Helper function to check if a set of vertices forms a clique
-    bool isClique(const std::vector<int>& vertices) const {
+    bool isC(const vector<int>& vertices) const {
         for (size_t i = 0; i < vertices.size(); i++) {
             for (size_t j = i + 1; j < vertices.size(); j++) {
-                if (std::find(adj[vertices[i]].begin(), adj[vertices[i]].end(), vertices[j]) == adj[vertices[i]].end()) {
+                if (find(adj[vertices[i]].begin(), adj[vertices[i]].end(), vertices[j]) == adj[vertices[i]].end()) {
                     return false;
                 }
             }
@@ -40,14 +39,13 @@ public:
         return n;
     }
     
-    const std::vector<std::vector<int>>& getAdjList() const {
+    const vector<vector<int>>& getAdjList() const {
         return adj;
     }
     
-    // Find all h-cliques in the graph using backtracking
-    void findCliques(int h, std::vector<int>& current, int start, std::vector<std::vector<int>>& cliques) const {
+    void fc(int h, vector<int>& current, int start, vector<vector<int>>& cliques) const {
         if (current.size() == h) {
-            if (isClique(current)) {
+            if (isC(current)) {
                 cliques.push_back(current);
             }
             return;
@@ -55,26 +53,24 @@ public:
         
         for (int i = start; i < n; i++) {
             current.push_back(i);
-            findCliques(h, current, i + 1, cliques);
+            fc(h, current, i + 1, cliques);
             current.pop_back();
         }
     }
     
-    // Calculate clique degree of a vertex (number of h-cliques containing v)
-    int cliqueDegree(int v, int h, const std::vector<std::vector<int>>& hCliques) const {
+    int CD(int v, int h, const vector<vector<int>>& hCliques) const {
         int degree = 0;
         for (const auto& clique : hCliques) {
-            if (std::find(clique.begin(), clique.end(), v) != clique.end()) {
+            if (find(clique.begin(), clique.end(), v) != clique.end()) {
                 degree++;
             }
         }
         return degree;
     }
     
-    // Get induced subgraph from a set of vertices
-    Graph getInducedSubgraph(const std::vector<int>& vertices) const {
+    Graph GIS(const vector<int>& vertices) const {
         Graph subgraph(vertices.size());
-        std::unordered_map<int, int> indexMap;
+        unordered_map<int, int> indexMap;
         
         for (size_t i = 0; i < vertices.size(); i++) {
             indexMap[vertices[i]] = i;
@@ -84,7 +80,7 @@ public:
             for (size_t j = i + 1; j < vertices.size(); j++) {
                 int u = vertices[i];
                 int v = vertices[j];
-                if (std::find(adj[u].begin(), adj[u].end(), v) != adj[u].end()) {
+                if (find(adj[u].begin(), adj[u].end(), v) != adj[u].end()) {
                     subgraph.addEdge(indexMap[u], indexMap[v]);
                 }
             }
@@ -93,67 +89,56 @@ public:
         return subgraph;
     }
     
-    // Calculate h-clique density
     double cliqueDensity(int h) const {
-        std::vector<std::vector<int>> cliques;
-        std::vector<int> temp;
-        findCliques(h, temp, 0, cliques);
+        vector<vector<int>> cliques;
+        vector<int> temp;
+        fc(h, temp, 0, cliques);
         
         if (n == 0) return 0.0;
         return static_cast<double>(cliques.size()) / n;
     }
     
-    // Print the graph structure
     void printGraph() const {
-        std::cout << "Graph structure:" << std::endl;
+        cout << "Graph structure:" << endl;
         for (int i = 0; i < n; i++) {
-            std::cout << "Vertex " << i << " connected to: ";
+            cout << "Vertex " << i << " connected to: ";
             for (int j : adj[i]) {
-                std::cout << j << " ";
+                cout << j << " ";
             }
-            std::cout << std::endl;
+            cout << endl;
         }
     }
 };
 
-// Core decomposition algorithm for k-clique cores
-// Core decomposition algorithm for k-clique cores - FIXED VERSION
-std::vector<int> coreDecomposition(const Graph& G, int h) {
+vector<int> coreDecomposition(const Graph& G, int h) {
     int n = G.getVertexCount();
-    std::vector<int> core(n, 0);
+    vector<int> core(n, 0);
 
-    // 1) Enumerate all h-cliques
-    std::vector<std::vector<int>> hCliques;
-    std::vector<int> tmp;
-    G.findCliques(h, tmp, 0, hCliques);
+    vector<vector<int>> hCliques;
+    vector<int> tmp;
+    G.fc(h, tmp, 0, hCliques);
 
-    // 2) Build vertex→cliques map
-    std::vector<std::vector<int>> vertexToCliques(n);
+    vector<vector<int>> vertexToCliques(n);
     for (int i = 0; i < (int)hCliques.size(); i++)
         for (int v : hCliques[i])
             vertexToCliques[v].push_back(i);
 
-    // 3) Init degrees = number of cliques per vertex
-    std::vector<int> degrees(n);
+    vector<int> degrees(n);
     for (int v = 0; v < n; v++)
         degrees[v] = vertexToCliques[v].size();
 
-    // 4) Track which cliques are still active
-    std::vector<int> cliqueSize(hCliques.size(), h);
-    std::vector<bool> cliqueActive(hCliques.size(), true);
+    vector<int> cliqueSize(hCliques.size(), h);
+    vector<bool> cliqueActive(hCliques.size(), true);
 
-    // 5) Build a simple "queue" of (degree,vertex)
-    std::vector<std::pair<int,int>> vertexQueue;
+    vector<pair<int,int>> vertexQueue;
     vertexQueue.reserve(n);
     for (int v = 0; v < n; v++)
         vertexQueue.emplace_back(degrees[v], v);
 
-    std::vector<bool> removed(n,false);
+    vector<bool> removed(n,false);
 
-    // 6) Peel vertices in increasing order of current degree
     while (!vertexQueue.empty()) {
-        // find and remove the min‐degree vertex
-        auto it = std::min_element(vertexQueue.begin(), vertexQueue.end());
+        auto it = min_element(vertexQueue.begin(), vertexQueue.end());
         int k = it->first;
         int v = it->second;
         vertexQueue.erase(it);
@@ -189,10 +174,9 @@ std::vector<int> coreDecomposition(const Graph& G, int h) {
     return core;
 }
 
-// Extract k-core from a graph using core numbers
-Graph extractKCore(const Graph& G, int k, const std::vector<int>& coreNumbers) {
+Graph extractKCore(const Graph& G, int k, const vector<int>& coreNumbers) {
     int n = G.getVertexCount();
-    std::vector<int> kCoreVertices;
+    vector<int> kCoreVertices;
     
     for (int v = 0; v < n; v++) {
         if (coreNumbers[v] >= k) {
@@ -200,25 +184,25 @@ Graph extractKCore(const Graph& G, int k, const std::vector<int>& coreNumbers) {
         }
     }
     
-    std::cout << "Extracting " << k << "-core with " << kCoreVertices.size() << " vertices: ";
+    cout << "Extracting " << k << "-core with " << kCoreVertices.size() << " vertices: ";
     for (int v : kCoreVertices) {
-        std::cout << v << " ";
+        cout << v << " ";
     }
-    std::cout << std::endl;
+    cout << endl;
     
-    return G.getInducedSubgraph(kCoreVertices);
+    return G.GIS(kCoreVertices);
 }
 
 // Find connected components of a graph
-std::vector<Graph> getConnectedComponents(const Graph& G) {
+vector<Graph> getConnectedComponents(const Graph& G) {
     int n = G.getVertexCount();
-    std::vector<bool> visited(n, false);
-    std::vector<Graph> components;
+    vector<bool> visited(n, false);
+    vector<Graph> components;
     
     for (int v = 0; v < n; v++) {
         if (!visited[v]) {
-            std::vector<int> componentVertices;
-            std::queue<int> q;
+            vector<int> componentVertices;
+            queue<int> q;
             q.push(v);
             visited[v] = true;
             
@@ -235,79 +219,70 @@ std::vector<Graph> getConnectedComponents(const Graph& G) {
                 }
             }
             
-            std::cout << "Component " << components.size() + 1 << " vertices: ";
+            cout << "Component " << components.size() + 1 << " vertices: ";
             for (int u : componentVertices) {
-                std::cout << u << " ";
+                cout << u << " ";
             }
-            std::cout << std::endl;
+            cout << endl;
             
-            components.push_back(G.getInducedSubgraph(componentVertices));
+            components.push_back(G.GIS(componentVertices));
         }
     }
     
     return components;
 }
 
-// Build flow network for min-cut computation
-std::vector<std::vector<int>> buildFlowNetwork(const Graph& G, int h, double alpha) {
+vector<vector<int>> buildFlowNetwork(const Graph& G, int h, double alpha) {
     int n = G.getVertexCount();
     
-    // Find all h-cliques and (h-1)-cliques
-    std::vector<std::vector<int>> hCliques;
-    std::vector<std::vector<int>> hMinus1Cliques;
-    std::vector<int> temp;
-    G.findCliques(h, temp, 0, hCliques);
-    G.findCliques(h-1, temp, 0, hMinus1Cliques);
+    vector<vector<int>> hCliques;
+    vector<vector<int>> hMinus1Cliques;
+    vector<int> temp;
+    G.fc(h, temp, 0, hCliques);
+    G.fc(h-1, temp, 0, hMinus1Cliques);
     
-    std::cout << "Flow network: Found " << hCliques.size() << " " << h << "-cliques and " 
-              << hMinus1Cliques.size() << " " << (h-1) << "-cliques" << std::endl;
+    cout << "Flow network: Found " << hCliques.size() << " " << h << "-cliques and " 
+              << hMinus1Cliques.size() << " " << (h-1) << "-cliques" << endl;
     
-    // Calculate clique degrees
-    std::vector<int> cliqueDegrees(n, 0);
+    vector<int> CDs(n, 0);
     for (int v = 0; v < n; v++) {
-        cliqueDegrees[v] = G.cliqueDegree(v, h, hCliques);
+        CDs[v] = G.CD(v, h, hCliques);
     }
     
-    // Build flow network
     int numNodes = 1 + n + hMinus1Cliques.size() + 1;
-    std::vector<std::vector<int>> capacity(numNodes, std::vector<int>(numNodes, 0));
+    vector<vector<int>> capacity(numNodes, vector<int>(numNodes, 0));
     
     int s = 0;
     int t = numNodes - 1;
     
-    // Add edges from s to vertices
     for (int v = 0; v < n; v++) {
-        capacity[s][v + 1] = cliqueDegrees[v];
-        if (cliqueDegrees[v] > 0) {
-            std::cout << "Edge s -> " << v << " with capacity " << cliqueDegrees[v] << std::endl;
+        capacity[s][v + 1] = CDs[v];
+        if (CDs[v] > 0) {
+            cout << "Edge s -> " << v << " with capacity " << CDs[v] << endl;
         }
     }
     
-    // Add edges from vertices to t
     for (int v = 0; v < n; v++) {
         capacity[v + 1][t] = alpha * h;
-        std::cout << "Edge " << v << " -> t with capacity " << (alpha * h) << std::endl;
+        cout << "Edge " << v << " -> t with capacity " << (alpha * h) << endl;
     }
     
-    // Add edges from vertices to (h-1)-cliques and vice versa
     for (size_t i = 0; i < hMinus1Cliques.size(); i++) {
         const auto& clique = hMinus1Cliques[i];
         
-        // Add edges from (h-1)-cliques to vertices
         for (int v : clique) {
             capacity[n + 1 + i][v + 1] = INT_MAX;
-            std::cout << "Edge clique" << i << " -> " << v << " with capacity INF" << std::endl;
+            cout << "Edge clique" << i << " -> " << v << " with capacity INF" << endl;
         }
         
-        // Add edges from vertices to (h-1)-cliques
         for (int v = 0; v < n; v++) {
-            if (std::find(clique.begin(), clique.end(), v) != clique.end()) {
+            if (find(clique.begin(), clique.end(), v) != clique.end()) {
                 continue;
             }
             
             bool canFormClique = true;
             for (int u : clique) {
-                if (std::find(G.getAdjList()[v].begin(), G.getAdjList()[v].end(), u) == G.getAdjList()[v].end()) {
+                if (find(G.getAdjList()[v].begin(), G.getAdjList()[v].end(), u) == G.getAdjList()[v].end()) {
                     canFormClique = false;
                     break;
                 }
@@ -315,7 +290,7 @@ std::vector<std::vector<int>> buildFlowNetwork(const Graph& G, int h, double alp
             
             if (canFormClique) {
                 capacity[v + 1][n + 1 + i] = 1;
-                std::cout << "Edge " << v << " -> clique" << i << " with capacity 1" << std::endl;
+                cout << "Edge " << v << " -> clique" << i << " with capacity 1" << endl;
             }
         }
     }
@@ -323,17 +298,15 @@ std::vector<std::vector<int>> buildFlowNetwork(const Graph& G, int h, double alp
     return capacity;
 }
 
-// Ford-Fulkerson algorithm for max flow / min cut
-int fordFulkerson(const std::vector<std::vector<int>>& capacity, int s, int t, std::vector<int>& minCut) {
+int ff(const vector<vector<int>>& capacity, int s, int t, vector<int>& minCut) {
     int n = capacity.size();
-    std::vector<std::vector<int>> residual = capacity;
-    std::vector<int> parent(n);
+    vector<vector<int>> residual = capacity;
+    vector<int> parent(n);
     int maxFlow = 0;
     
-    // Fixed lambda function with explicit return type
-    auto bfs = [&](std::vector<int>& parent) -> bool {
-        std::vector<bool> visited(n, false);
-        std::queue<int> q;
+    auto bfs = [&](vector<int>& parent) -> bool {
+        vector<bool> visited(n, false);
+        queue<int> q;
         
         q.push(s);
         visited[s] = true;
@@ -353,20 +326,17 @@ int fordFulkerson(const std::vector<std::vector<int>>& capacity, int s, int t, s
             }
         }
         
-        return bool(visited[t]); // Explicitly convert to bool
+        return bool(visited[t]); 
     };
     
-    // Augment flow while there is a path from s to t
     while (bfs(parent)) {
         int pathFlow = INT_MAX;
         
-        // Find minimum residual capacity along the path
         for (int v = t; v != s; v = parent[v]) {
             int u = parent[v];
-            pathFlow = std::min(pathFlow, residual[u][v]);
+            pathFlow = min(pathFlow, residual[u][v]);
         }
         
-        // Update residual capacities
         for (int v = t; v != s; v = parent[v]) {
             int u = parent[v];
             residual[u][v] -= pathFlow;
@@ -376,11 +346,11 @@ int fordFulkerson(const std::vector<std::vector<int>>& capacity, int s, int t, s
         maxFlow += pathFlow;
     }
     
-    std::cout << "Max flow: " << maxFlow << std::endl;
+    cout << "Max flow: " << maxFlow << endl;
     
     // Find min-cut
-    std::vector<bool> visited(n, false);
-    std::queue<int> q;
+    vector<bool> visited(n, false);
+    queue<int> q;
     q.push(s);
     visited[s] = true;
     
@@ -403,100 +373,89 @@ int fordFulkerson(const std::vector<std::vector<int>>& capacity, int s, int t, s
         }
     }
     
-    std::cout << "Min-cut vertices: ";
+    cout << "Min-cut vertices: ";
     for (int v : minCut) {
-        std::cout << v << " ";
+        cout << v << " ";
     }
-    std::cout << std::endl;
+    cout << endl;
     
     return maxFlow;
 }
 
-// CoreExact algorithm (Algorithm 4)
+// (Algorithm 4)
 Graph coreExact(const Graph& G, int h) {
     int n = G.getVertexCount();
-    std::cout << "Running CoreExact algorithm for " << h << "-clique densest subgraph" << std::endl;
+    cout << "Running CoreExact algorithm for " << h << "-clique densest subgraph" << endl;
     
-    // Print graph structure for debugging
     G.printGraph();
     
-    // Step 1: Perform core decomposition
-    std::cout << "Performing core decomposition..." << std::endl;
-    std::vector<int> coreNumbers = coreDecomposition(G, h);
+    cout << "Performing core decomposition..." << endl;
+    vector<int> coreNumbers = coreDecomposition(G, h);
     
     int kMax = 0;
     for (int k : coreNumbers) {
-        kMax = std::max(kMax, k);
+        kMax = max(kMax, k);
     }
-    std::cout << "Maximum core number: " << kMax << std::endl;
+    cout << "Maximum core number: " << kMax << endl;
     
-    // Step 2: Find initial lower bound using (k',Ψ)-core
     double rho = 0.0;
-    std::vector<std::vector<int>> hCliques;
-    std::vector<int> temp;
-    G.findCliques(h, temp, 0, hCliques);
+    vector<vector<int>> hCliques;
+    vector<int> temp;
+    G.fc(h, temp, 0, hCliques);
     
     if (!hCliques.empty()) {
         rho = static_cast<double>(hCliques.size()) / n;
     }
     
-    int kPrime = std::ceil(rho);
-    std::cout << "Initial lower bound: " << rho << ", k': " << kPrime << std::endl;
+    int kPrime = ceil(rho);
+    cout << "Initial lower bound: " << rho << ", k': " << kPrime << endl;
     
-    // Step 3: Extract (k',Ψ)-core
     Graph kPrimeCore = extractKCore(G, kPrime, coreNumbers);
     
-    // Step 4: Get connected components
-    std::vector<Graph> components = getConnectedComponents(kPrimeCore);
-    std::cout << "Number of connected components: " << components.size() << std::endl;
+    vector<Graph> components = getConnectedComponents(kPrimeCore);
+    cout << "Number of connected components: " << components.size() << endl;
     
-    // Initialize best subgraph
     Graph bestSubgraph(0);
     double bestDensity = 0.0;
     
-    // Step 5-20: Process each connected component
     for (size_t i = 0; i < components.size(); i++) {
         Graph component = components[i];
-        std::cout << "Processing component " << i+1 << " with " << component.getVertexCount() << " vertices" << std::endl;
+        cout << "Processing component " << i+1 << " with " << component.getVertexCount() << " vertices" << endl;
         
         // Skip tiny components
         if (component.getVertexCount() < h) {
-            std::cout << "Component too small, skipping" << std::endl;
+            cout << "Component too small, skipping" << endl;
             continue;
         }
         
-        // Step 7-8: Check if component has density >= rho
         double componentDensity = component.cliqueDensity(h);
-        std::cout << "Component density: " << componentDensity << std::endl;
+        cout << "Component density: " << componentDensity << endl;
         
         if (componentDensity < rho) {
-            std::cout << "Component density " << componentDensity << " < lower bound " << rho << ", skipping" << std::endl;
+            cout << "Component density " << componentDensity << " < lower bound " << rho << ", skipping" << endl;
             continue;
         }
         
-        // Step 10-19: Binary search for optimal density
         double l = 0;
-        double u = kMax > 0 ? kMax : 1.0;  // Ensure u is positive
-        std::vector<int> bestCut;
+        double u = kMax > 0 ? kMax : 1.0;  
+        vector<int> bestCut;
         
-        std::cout << "Starting binary search with bounds [" << l << ", " << u << "]" << std::endl;
+        cout << "Starting binary search with bounds [" << l << ", " << u << "]" << endl;
         
         while (u - l >= 1.0 / (component.getVertexCount() * (component.getVertexCount() - 1))) {
             double alpha = (l + u) / 2.0;
-            std::cout << "Trying α = " << alpha << std::endl;
+            cout << "Trying α = " << alpha << endl;
             
-            // Build flow network and find min-cut
-            std::vector<std::vector<int>> flowNetwork = buildFlowNetwork(component, h, alpha);
-            std::vector<int> minCut;
-            fordFulkerson(flowNetwork, 0, flowNetwork.size()-1, minCut);
+            vector<vector<int>> flowNetwork = buildFlowNetwork(component, h, alpha);
+            vector<int> minCut;
+            ff
+        (flowNetwork, 0, flowNetwork.size()-1, minCut);
             
             if (minCut.size() <= 1) {
-                // Only source is in the cut
                 u = alpha;
-                std::cout << "Cut contains only source, reducing upper bound to " << u << std::endl;
+                cout << "Cut contains only source, reducing upper bound to " << u << endl;
             } else {
-                // Extract vertices from the cut (excluding source)
-                std::vector<int> cutVertices;
+                vector<int> cutVertices;
                 for (int node : minCut) {
                     if (node != 0 && node < component.getVertexCount() + 1) {
                         cutVertices.push_back(node - 1);
@@ -505,90 +464,85 @@ Graph coreExact(const Graph& G, int h) {
                 
                 l = alpha;
                 bestCut = cutVertices;
-                std::cout << "Cut contains " << cutVertices.size() << " vertices, increasing lower bound to " << l << std::endl;
+                cout << "Cut contains " << cutVertices.size() << " vertices, increasing lower bound to " << l << endl;
             }
         }
         
         // Extract subgraph from best cut
         if (!bestCut.empty()) {
-            Graph candidateSubgraph = component.getInducedSubgraph(bestCut);
+            Graph candidateSubgraph = component.GIS(bestCut);
             double candidateDensity = candidateSubgraph.cliqueDensity(h);
             
-            std::cout << "Candidate subgraph has " << candidateSubgraph.getVertexCount() 
-                      << " vertices and density " << candidateDensity << std::endl;
+            cout << "Candidate subgraph has " << candidateSubgraph.getVertexCount() 
+                      << " vertices and density " << candidateDensity << endl;
             
             if (candidateDensity > bestDensity) {
                 bestDensity = candidateDensity;
                 bestSubgraph = candidateSubgraph;
-                std::cout << "Found better subgraph with density " << bestDensity << std::endl;
+                cout << "Found better subgraph with density " << bestDensity << endl;
             }
         }
     }
     
-    std::cout << "CoreExact completed. Best subgraph has " << bestSubgraph.getVertexCount() 
-              << " vertices and density " << bestDensity << std::endl;
+    cout << "CoreExact completed. Best subgraph has " << bestSubgraph.getVertexCount() 
+              << " vertices and density " << bestDensity << endl;
     
     return bestSubgraph;
 }
 
 int main() {
-    std::ifstream fin("CA-HepTh.txt");
+    ifstream fin("net.txt");
     if (!fin) {
-        std::cerr << "Error: cannot open input.txt\n";
+        cerr << "Error: cannot open input.txt\n";
         return 1;
     }
 
-    // 2) Read n, m, h
     int n, m, h;
     fin >> n >> m >> h;
-    std::cout << "Read: n=" << n << "  m=" << m << "  h=" << h << "\n";
+    cout << "Read: n=" << n << "  m=" << m << "  h=" << h << "\n";
 
-    // 3) Prepare mapping from external IDs to internal [0..n-1]
-    std::unordered_map<int,int> ext2int;
-    ext2int.reserve(n);
-    std::vector<int> int2ext;
+    unordered_map<int,int> exe11;
+    exe11.reserve(n);
+    vector<int> int2ext;
     int2ext.reserve(n);
     
-    // 4) Create graph with n internal vertices
     Graph G(n);
 
-    // 5) Read edges, map external→internal, add to G
     for (int i = 0; i < m; i++) {
         int ue, ve;
         fin >> ue >> ve;
 
-        // map ue
-        auto it = ext2int.find(ue);
+        
+        auto it = exe11.find(ue);
         int ui;
-        if (it == ext2int.end()) {
-            ui = ext2int[ue] = (int)int2ext.size();
+        if (it == exe11.end()) {
+            ui = exe11[ue] = (int)int2ext.size();
             int2ext.push_back(ue);
         } else {
             ui = it->second;
         }
 
-        // map ve
-        it = ext2int.find(ve);
+        
+        it = exe11.find(ve);
         int vi;
-        if (it == ext2int.end()) {
-            vi = ext2int[ve] = (int)int2ext.size();
+        if (it == exe11.end()) {
+            vi = exe11[ve] = (int)int2ext.size();
             int2ext.push_back(ve);
         } else {
             vi = it->second;
         }
 
-        // add edge in internal graph
+    
         G.addEdge(ui, vi);
     }
     fin.close();
     
-    // Find the h-clique densest subgraph
-    auto startTime = std::chrono::high_resolution_clock::now();
+    auto startTime = chrono::high_resolution_clock::now();
     Graph densestSubgraph = coreExact(G, h);
-    auto endTime = std::chrono::high_resolution_clock::now();
+    auto endTime = chrono::high_resolution_clock::now();
     
-    double executionTime = std::chrono::duration<double>(endTime - startTime).count();
-    std::cout << "Execution time: " << executionTime << " seconds" << std::endl;
+    double executionTime = chrono::duration<double>(endTime - startTime).count();
+    cout << "Execution time: " << executionTime << " seconds" << endl;
     
     return 0;
 }
