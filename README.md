@@ -1,7 +1,7 @@
 # DAA_Assignment_2
 # Maximal Clique Algorithm - Instructions
 ## Website Link
-https://sagarthomas24.github.io/Daa_assignmet_1/
+https://abhinavchitturi.github.io/DAA_ASSIGNMENT_2_WEB/
 ## Prerequisites
 Ensure you have the following installed:
 
